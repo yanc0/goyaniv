@@ -5,6 +5,7 @@ import (
   "github.com/olahol/melody"
   "github.com/gin-gonic/gin"
   "net/http"
+  "github.com/satori/go.uuid"
 )
 
 type Goyaniv struct {
@@ -16,7 +17,7 @@ func (goya *Goyaniv) AddGame (game *Game) {
   goya.Games = append(goya.Games, game)
 }
 
-func (goya *Goyaniv) FindGame(s *melody.Session) (*Game){
+func (goya *Goyaniv) FindGameWithSession(s *melody.Session) (*Game){
   for _, game := range goya.Games {
     for _, player := range game.Players {
       if s == player.Session {
@@ -27,17 +28,21 @@ func (goya *Goyaniv) FindGame(s *melody.Session) (*Game){
   return nil
 }
 
+func (goya *Goyaniv) FindGameWithUrl(url string) (*Game){
+  for _, game := range goya.Games {
+    if game.Url == url {
+      return game
+    }
+  }
+  return nil
+}
+
 func main() {
-  d := Deck(make([]Card, 0))
-  d.Init()
-  d.Shuffle()
 
   r := gin.Default()
   m := melody.New()
 
-  game := Game{"Partie Yaniv", make([]*Player, 0), &d, 0}
   goya := Goyaniv{m, make([]*Game, 0)}
-  goya.AddGame(&game)
 
   r.GET("/game/:name", func(c *gin.Context) {
       http.ServeFile(c.Writer, c.Request, "game.html")
@@ -53,9 +58,29 @@ func main() {
   })
 
   m.HandleConnect(func(s *melody.Session) {
-    fmt.Println("Handle Connect, new player")
+    fmt.Print("Handle Connect, new player: ")
+    game := goya.FindGameWithUrl(s.Request.URL.Path)
+    if (game == nil) {
+      middledeck := Deck{}
+      middledeck.Init()
+      middledeck.Shuffle()
+      playdeck := Deck{}
+      playdeck.Add(middledeck.TakeCard())
+      game = &Game{Name: "Partie Yaniv",
+                  Players: make([]*Player, 0),
+                  MiddleDeck: &middledeck,
+                  PlayDeck: &playdeck,
+                  Round: 0,
+                  Url: s.Request.URL.Path}
+      goya.AddGame(game)
+    }
     deck := Deck{}
-    player := Player{"Guest", s, &deck, "playing"}
+    for i := 0; i < 5; i++ {
+      deck.Add(game.MiddleDeck.TakeCard())
+    }
+    uniquename := uuid.NewV4().String()
+    fmt.Println(uniquename)
+    player := Player{Name: uniquename, Session: s, Deck: &deck, State:"playing"}
     game.Players = append(game.Players, &player)
   })
   r.Run(":5000") 

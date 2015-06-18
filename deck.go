@@ -23,9 +23,11 @@ func (d *Deck) Init(){
   Symbols[1] = "diamond"
   Symbols[2] = "heart"
   Symbols[3] = "club"
+  id := 1
   for i := 0; i < 14; i++ {
     for _, Symbol := range Symbols {
-      d.Add(Card{i, Symbol})
+      d.Add(Card{id, i, Symbol})
+      id++
     }
   }
 }
