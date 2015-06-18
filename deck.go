@@ -3,11 +3,12 @@ package main
 import (
   "encoding/json"
   "log"
+  "fmt"
   "time"
   "math/rand"
 )
 
-type Deck []Card
+type Deck []*Card
 
 func (d Deck) Score() int {
   var i int
@@ -26,7 +27,7 @@ func (d *Deck) Init(){
   id := 1
   for i := 0; i < 14; i++ {
     for _, Symbol := range Symbols {
-      d.Add(Card{id, i, Symbol})
+      d.Add(&Card{id, i, Symbol})
       id++
     }
   }
@@ -40,11 +41,11 @@ func (d *Deck) Shuffle() {
   }
 }
 
-func (d *Deck) Add (c Card) {
+func (d *Deck) Add (c *Card) {
   *d = append(*d, c)
 }
 
-func (d *Deck) TakeCard() Card {
+func (d *Deck) TakeCard() *Card {
   //shift first card
   c := (*d)[0]
   *d = (*d)[1:]
@@ -116,4 +117,16 @@ func (d Deck) Json() string {
     log.Fatal(err)
   }
   return string(data)
+}
+
+func (d *Deck) TakeCardID (id int) (*Card) {
+  for i, card := range *d {
+      fmt.Println("card.Id  ", card.Id)
+      fmt.Println("id  ", id)
+    if card.Id == id {
+      *d = append((*d)[:i], (*d)[i+1:]...)
+      return card
+    }
+  }
+  return nil
 }

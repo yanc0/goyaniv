@@ -2,24 +2,9 @@ package main
 
 import (
   "encoding/json"
-  "strings"
   "github.com/olahol/melody"
+  "fmt"
 )
-
-type State struct {
-  PlayDeck Deck `json:"playdeck"`
-  PlayersScore map[string]int `json:"playersscore"`
-  PlayersNumCard map[string]int `json:"playersnumcard"`
-  PlayerTurn string `json:"playerturn"`
-  LogLine string `json:"logline"`
-  Round int `json:"round"`
-  Launched bool `json:"launched"`
-}
-
-func (s State) Json() (string, []byte) {
-  data, _ := json.Marshal(s)
-  return string(data), data
-}
 
 func ActionDraws(goya *Goyaniv, s *melody.Session) {
   game := *goya.FindGameWithSession(s)
@@ -72,19 +57,53 @@ func ActionSetName(goya *Goyaniv, s *melody.Session, name string) {
   }
 }
 
-func FireAction (goya *Goyaniv, s *melody.Session, action []byte) {
-  a := string(action)
-  switch strings.Split(a, " ")[0] {
+func ActionPut(goya *Goyaniv, s *melody.Session, action *Action) {
+  game := goya.FindGameWithSession(s)
+  for _, player := range game.Players {
+    if player.Session == s {
+      decktmp := Deck{}
+      for _, id := range action.PutCards {
+        decktmp.Add(player.Deck.TakeCardID(id))
+      }
+      for _, card := range decktmp {
+        game.PlayDeck.Add(card)
+      }
+      cardtaken := game.PlayDeck.TakeCardID(action.TakeCard)
+      if cardtaken == nil {
+        fmt.Println("Card does not exist in deck")
+      }
+      player.Deck.Add(cardtaken)
+    }
+  }
+}
+
+type Action struct {
+  Name string `json:"name"`
+  PutCards []int `json:"putcards"`
+  TakeCard int `json:"takecard"`
+  Option string `json:"option"`
+}
+
+func FireAction (goya *Goyaniv, s *melody.Session, jsonrcv []byte) {
+  action := &Action{}
+  json.Unmarshal(jsonrcv, &action)
+  fmt.Println(*action)
+  switch action.Name {
     case "draws":
       ActionDraws(goya, s)
+      BroadcastState(goya, s)
     case "yaniv":
       ActionYaniv(goya, s)
+      BroadcastState(goya, s)
     case "score":
       ActionGetScore(goya, s)
     case "mydeck":
       ActionMyDeck(goya, s)
     case "set":
-      ActionSetName(goya, s, strings.Split(a, " ")[1])
+      ActionSetName(goya, s, action.Option)
+      BroadcastState(goya, s)
+    case "put":
+      ActionPut(goya, s, action)
+      BroadcastState(goya, s)
   }
-  BroadcastState(goya, s)
 }

@@ -13,7 +13,7 @@ type Game struct {
 }
 
 func (g *Game) GetState() (State){
-  s := State{PlayDeck: make([]Card, 0),
+  s := State{PlayDeck: Deck{},
              PlayersScore: make(map[string]int,0),
              PlayersNumCard: make(map[string]int,0)}
   if g.PlayDeck != nil {
