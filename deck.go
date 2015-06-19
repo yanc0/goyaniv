@@ -56,6 +56,23 @@ func (d Deck) Len() int {
   return len(d)
 }
 
+func (d *Deck) IsValid() bool {
+  return d.IsSequence() || d.IsMultiple() || d.Len() == 1
+}
+
+func (d Deck) IsMultiple() bool {
+  if d.Len() < 2 {
+    return false
+  }
+  value := d[0].Value
+  for _, card := range d {
+    if card.Value != value {
+      return false
+    }
+  }
+  return true
+}
+
 func (d Deck) IsSequence() bool {
   dtmp := d
   var min, max int = 14, 0

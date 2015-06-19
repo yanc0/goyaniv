@@ -57,7 +57,7 @@ func ActionSetName(goya *Goyaniv, s *melody.Session, name string) {
   }
 }
 
-func ActionPut(goya *Goyaniv, s *melody.Session, action *Action) {
+func ActionPut(goya *Goyaniv, s *melody.Session, action *Action)(err string) {
   game := goya.FindGameWithSession(s)
   for _, player := range game.Players {
     if player.Session == s {
@@ -65,16 +65,33 @@ func ActionPut(goya *Goyaniv, s *melody.Session, action *Action) {
       for _, id := range action.PutCards {
         decktmp.Add(player.Deck.TakeCardID(id))
       }
-      for _, card := range decktmp {
-        game.PlayDeck.Add(card)
+      if decktmp.IsValid() {
+        for _, card := range decktmp {
+          game.PlayDeck.Add(card)
+        }
+      } else {
+        for _, card := range decktmp {
+          player.Deck.Add(card)
+        }
+        s.Write([]byte("Invalid Combination"))
+        return "invalid combination"
       }
-      cardtaken := game.PlayDeck.TakeCardID(action.TakeCard)
-      if cardtaken == nil {
-        fmt.Println("Card does not exist in deck")
+      if action.TakeCard == 0 {
+        cardtaken := game.MiddleDeck.TakeCard()
+        if cardtaken == nil {
+          fmt.Println("Card does not exist in deck")
+        }
+        player.Deck.Add(cardtaken)
+      } else {
+        cardtaken := game.PlayDeck.TakeCardID(action.TakeCard)
+        if cardtaken == nil {
+          fmt.Println("Card does not exist in deck")
+        }
+        player.Deck.Add(cardtaken)
       }
-      player.Deck.Add(cardtaken)
     }
   }
+  return "noerror"
 }
 
 type Action struct {
@@ -99,11 +116,12 @@ func FireAction (goya *Goyaniv, s *melody.Session, jsonrcv []byte) {
       ActionGetScore(goya, s)
     case "mydeck":
       ActionMyDeck(goya, s)
-    case "set":
+    case "name":
       ActionSetName(goya, s, action.Option)
       BroadcastState(goya, s)
     case "put":
-      ActionPut(goya, s, action)
-      BroadcastState(goya, s)
+      if ActionPut(goya, s, action) == "noerror" {
+        BroadcastState(goya, s)
+      }
   }
 }
