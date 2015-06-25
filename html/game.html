@@ -1,0 +1,113 @@
+<html>
+  <head>
+    <title>Yaniv Devel</title>
+    <script src="/jq.js"></script>
+  </head>
+
+  <style>
+    #log {
+      text-align: left;
+      background: #f1f1f1;
+      min-height: 300px;
+      padding: 20px;
+    }
+
+    .cardselected {
+      background-color : yellow;
+    }
+    #playdeck {
+      padding-bottom: 10px;
+    }
+  </style>
+
+  <body>
+    <center>
+        <div id="myself">
+            Myself: 
+        </div>
+        <div id="playerturn">
+            Playerturn:
+        </div>
+      <h3 id="name"></h3>
+      <pre id="log"></pre>
+      <input id="text" type="text" value='{"name":"name","putcards":[1,2,3],"takecard":1,"option":"toto"}'>
+      <div class="cardstack">Stack</div>
+      <div id="playdeck"></div>
+      <div id="mydeck"></div>
+    </center>
+    <script>
+      var url = "ws://" + window.location.host + window.location.pathname + "/ws";
+      var ws = new WebSocket(url);
+      var name = "Guest" + Math.floor(Math.random() * 1000);
+      var room = "Yaniv";
+
+      var putcards = new Array();
+      var takecard = 0;
+      var sendjson = {"name":"","putcards":[],"takecard":0,"option":""}
+
+      function myself(){
+          $("#myself").empty()
+          $("#myself").append("Myself:"+$.cookie("goyanivid"));
+      };
+
+        function playerturn(s) {
+            $("#playerturn").empty()
+            $("#playerturn").append("Playerturn:" +s.playerturn);
+        };
+      function appendCardPlayDeck(element, index, array) {
+        $("#playdeck").append("<div class='cardplaydeck' id='"+element.id+"'>"+element.value+", "+element.symbol+" </div>")
+      };
+      function appendCardMyDeck(element, index, array) {
+        $("#mydeck").append("<div class='cardmydeck' id='"+element.id+"'>"+element.value+", "+element.symbol+" </div>")
+      };
+      ws.onmessage = function (msg) {
+        var state = jQuery.parseJSON(msg.data);
+        var line =  msg.data + "\n";
+        $("#log").append(line);
+        $("#mydeck").empty()
+        $("#playdeck").empty()
+        state.mydeck.forEach(appendCardMyDeck);
+        state.playdeck.forEach(appendCardPlayDeck);
+        putcards = new Array()
+        cardselector();
+        myself();
+        playerturn(state);
+      };
+
+      text.onkeydown = function (e) {
+        if (e.keyCode === 13 && text.value !== "") {
+          ws.send(text.value);
+          text.value = "";
+        }
+      };
+      function cardselector () {
+        $(".cardmydeck").click(function() {
+          if($(this).hasClass('cardselected')){
+            $(this).removeClass('cardselected');
+            putcards.splice(putcards.indexOf(parseInt($(this).attr("id"),0)))
+          } else {
+            $(this).addClass('cardselected');
+            putcards.push(parseInt($(this).attr("id")))
+          }
+        });
+        $(".cardplaydeck").click(function() {
+          takecard = parseInt($(this).attr('id'), 0)
+          sendjson.takecard = takecard;
+          sendjson.putcards = putcards;
+          sendjson.name = "put";
+          ws.send(JSON.stringify(sendjson));
+        });
+        $(".cardstack").click(function() {
+          takecard = 0
+          sendjson.takecard = takecard;
+          sendjson.putcards = putcards;
+          sendjson.name = "put";
+          ws.send(JSON.stringify(sendjson));
+        });
+
+      };
+      
+      
+    </script>
+  </body>
+</html>
