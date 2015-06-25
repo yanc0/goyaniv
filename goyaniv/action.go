@@ -59,16 +59,18 @@ func ActionPut(game *Game, p *Player, action *Action) (err string) {
 		if action.TakeCard == 0 {
 			cardtaken := game.MiddleDeck.TakeCard()
 			if cardtaken == nil {
-				fmt.Println("Card does not exist in deck")
+				return "Card does not exist in deck"
 			}
 			p.Deck.Add(cardtaken)
 		} else {
 			cardtaken := game.PlayDeck.TakeCardID(action.TakeCard)
 			if cardtaken == nil {
-				fmt.Println("Card does not exist in deck")
+				return "Card does not exist in deck"
 			}
 			p.Deck.Add(cardtaken)
 		}
+		game.TrashDeck.AddDeck(game.PlayDeck)
+		fmt.Println(*game.TrashDeck)
 		game.PlayDeck = &Deck{}
 		for _, card := range decktmp {
 			game.PlayDeck.Add(card)

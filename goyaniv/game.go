@@ -9,6 +9,7 @@ type Game struct {
 	Players    []*Player `json:"players"`
 	MiddleDeck *Deck     `json:"middledeck"`
 	PlayDeck   *Deck     `json:"playdeck"`
+	TrashDeck  *Deck     `json:"playdeck"`
 	Round      int       `json:"round"`
 	Url        string    `json:"url"`
 	Launched   bool      `json:"launched"`
@@ -20,11 +21,13 @@ func NewGame(gameUrl string) *Game {
 	middle.Shuffle()
 	play := &Deck{}
 	play.Add(middle.TakeCard())
+	trash := &Deck{}
 	return &Game{
 		Name:       GetGameNameWithUrl(gameUrl),
 		Players:    make([]*Player, 0),
 		MiddleDeck: middle,
 		PlayDeck:   play,
+		TrashDeck:  trash,
 		Url:        gameUrl,
 		Turn:       100,
 	}
