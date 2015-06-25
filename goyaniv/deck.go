@@ -34,7 +34,11 @@ func NewCompleteDeck() *Deck {
 	}
 	return deck
 }
-
+func (d *Deck) AddDeck(deckadd *Deck) {
+	for _, _ = range *deckadd {
+		d.Add(deckadd.TakeCard())
+	}
+}
 func (d *Deck) Init() {
 	Symbols := make([]string, 4)
 	Symbols[0] = "spade"
