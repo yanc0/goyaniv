@@ -13,7 +13,10 @@ type Game struct {
 	Round      int       `json:"round"`
 	Url        string    `json:"url"`
 	Launched   bool      `json:"launched"`
+	Yaniver    *Player   `json:"yaniver"`
+	Asafed     *Player   `json:"asafed"`
 	Turn       int       `json:"turn"`
+	YanivAt    int       `json:"yanivat"`
 }
 
 func NewGame(gameUrl string) *Game {
@@ -30,6 +33,9 @@ func NewGame(gameUrl string) *Game {
 		TrashDeck:  trash,
 		Url:        gameUrl,
 		Turn:       100,
+		Yaniver:    nil,
+		Asafed:     nil,
+		YanivAt:    5,
 	}
 }
 func GetGameNameWithUrl(url string) string {

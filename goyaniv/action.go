@@ -35,8 +35,35 @@ func ActionSetName(p *Player, name string) {
 	p.Name = name
 }
 
+func ActionYaniv(game *Game, p *Player) string {
+	if p.Id == game.GetCurrentPlayer().Id {
+		if p.Deck.Weight() <= game.YanivAt {
+			game.Yaniver = p
+		} else {
+			return "You can't yaniv yet"
+		}
+	}
+	return "noerror"
+}
+
+func ActionAsaf(game *Game, player *Player) string {
+	if game.Yaniver != nil {
+		return "Nobody yaniv yet, you can't asaf"
+	} else {
+		if player.Deck.Weight() <= game.Yaniver.Deck.Weight() {
+			game.Asafed = game.Yaniver
+			game.Yaniver = player
+		} else {
+			game.Asafed = player
+		}
+	}
+	return "noerror"
+}
+
 func ActionPut(game *Game, p *Player, action *Action) (err string) {
-	fmt.Println(p.Id, "==", game.GetCurrentPlayer().Id)
+	if game.Yaniver != nil {
+		return "Game stopped, you can asaf only"
+	}
 	if p.Id == game.GetCurrentPlayer().Id {
 		decktmp := Deck{}
 		for _, id := range action.PutCards {
@@ -70,8 +97,6 @@ func ActionPut(game *Game, p *Player, action *Action) (err string) {
 			p.Deck.Add(cardtaken)
 		}
 		game.TrashDeck.AddDeck(game.PlayDeck)
-		fmt.Println(*game.TrashDeck)
-		game.PlayDeck = &Deck{}
 		for _, card := range decktmp {
 			game.PlayDeck.Add(card)
 		}
@@ -192,6 +217,20 @@ func FireMessage(srv *Server, s *melody.Session, jsn []byte) bool {
 		} else {
 			fmt.Println(err)
 			return false
+		}
+	case "yaniv":
+		err := ActionYaniv(game, player)
+		if err == "noerror" {
+			fmt.Println(player.Name, "just yanived !")
+		} else {
+			fmt.Println(err)
+		}
+	case "asaf":
+		err := ActionAsaf(game, player)
+		if err == "noerror" {
+			fmt.Println(player.Name, "Asafed")
+		} else {
+			fmt.Println(err)
 		}
 	}
 	return true

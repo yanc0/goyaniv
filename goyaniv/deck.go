@@ -39,6 +39,14 @@ func (d *Deck) AddDeck(deckadd *Deck) {
 		d.Add(deckadd.TakeCard())
 	}
 }
+
+func (d *Deck) Weight() int {
+	var weight int
+	for _, card := range *d {
+		weight += card.Weight()
+	}
+	return weight
+}
 func (d *Deck) Init() {
 	Symbols := make([]string, 4)
 	Symbols[0] = "spade"
