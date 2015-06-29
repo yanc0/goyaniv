@@ -11,6 +11,7 @@ type Player struct {
 	State     string          `json:"state"`
 	Score     int             `json:"score"`
 	Connected bool            `json:"connected"`
+	Ready     bool            `json:"ready"`
 	Id        string          `json:"id"`
 	Key       string          `json:"key"`
 }

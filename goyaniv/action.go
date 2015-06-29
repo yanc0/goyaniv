@@ -7,27 +7,16 @@ import (
 )
 
 func UnicastState(game *Game, player *Player) {
-	state := game.GetState()
+	state := NewState(game, player)
 	if player.Session != nil {
-		state.Myself = *player
-		state.MyDeck = *player.Deck
 		_, data := state.Json()
 		player.Session.Write(data)
 	}
 }
 
 func BroadcastState(game *Game) {
-	state := game.GetState()
-	if game.Players != nil {
-		for _, player := range game.Players {
-			if player.Session != nil {
-				state.Myself = *player
-				state.MyDeck = *player.Deck
-				_, data := state.Json()
-				player.Session.Write(data)
-			}
-		}
-
+	for _, player := range game.Players {
+		UnicastState(game, player)
 	}
 }
 
@@ -40,15 +29,24 @@ func ActionYaniv(game *Game, p *Player) string {
 		if p.Deck.Weight() <= game.YanivAt {
 			game.Yaniver = p
 		} else {
-			return "You can't yaniv yet"
+			error := "You cant' yaniv yet"
+			UnicastState(NewStateError(g, p, error))
+			return error
 		}
 	}
 	return "noerror"
 }
 
 func ActionAsaf(game *Game, player *Player) string {
+	if player.Deck.Weight() > 5 {
+		error := "You can't asaf with this deck"
+		UnicastState(NewStateError(g, p, error))
+		return error
+	}
 	if game.Yaniver != nil {
-		return "Nobody yaniv yet, you can't asaf"
+		error := "Nobody yaniv yet, you can't asaf"
+		UnicastState(NewStateError(g, p, error))
+		return error
 	} else {
 		if player.Deck.Weight() <= game.Yaniver.Deck.Weight() {
 			game.Asafed = game.Yaniver
@@ -62,7 +60,9 @@ func ActionAsaf(game *Game, player *Player) string {
 
 func ActionPut(game *Game, p *Player, action *Action) (err string) {
 	if game.Yaniver != nil {
-		return "Game stopped, you can asaf only"
+		error := "Game stopped, you can asaf only"
+		UnicastState(NewStateError(g, p, error))
+		return error
 	}
 	if p.Id == game.GetCurrentPlayer().Id {
 		decktmp := Deck{}
@@ -72,7 +72,9 @@ func ActionPut(game *Game, p *Player, action *Action) (err string) {
 				for _, card := range decktmp {
 					p.Deck.Add(card)
 				}
-				return "Put cards does not exists in player deck"
+				error := "Put cards does not exists in player deck"
+				UnicastState(NewStateError(g, p, error))
+				return error
 			}
 			decktmp.Add(c)
 		}
@@ -80,19 +82,24 @@ func ActionPut(game *Game, p *Player, action *Action) (err string) {
 			for _, card := range decktmp {
 				p.Deck.Add(card)
 			}
-			p.Session.Write([]byte("Invalid Combination"))
-			return "invalid combination"
+			error := "invalid combination"
+			UnicastState(NewStateError(g, p, error))
+			return error
 		}
 		if action.TakeCard == 0 {
 			cardtaken := game.MiddleDeck.TakeCard()
 			if cardtaken == nil {
-				return "Card does not exist in deck"
+				error := "Card does not exist in deck"
+				UnicastState(NewStateError(g, p, error))
+				return error
 			}
 			p.Deck.Add(cardtaken)
 		} else {
 			cardtaken := game.PlayDeck.TakeCardID(action.TakeCard)
 			if cardtaken == nil {
-				return "Card does not exist in deck"
+				error := "Card does not exist in deck"
+				UnicastState(NewStateError(g, p, error))
+				return error
 			}
 			p.Deck.Add(cardtaken)
 		}
@@ -104,7 +111,9 @@ func ActionPut(game *Game, p *Player, action *Action) (err string) {
 	} else if p == game.GetFastPlayer() {
 		return "fastplayer"
 	}
-	return "not yur tuurn"
+	error := "It is not your turn"
+	UnicastState(NewStateError(g, p, error))
+	return error
 }
 
 type Action struct {
@@ -155,6 +164,7 @@ func FireConnect(srv *Server, s *melody.Session) {
 	player := game.GetPlayer(playerid, playerkey)
 	if player == nil {
 		playerdeck := &Deck{}
+		player.Connected = true
 		for i := 0; i < 5; i++ {
 			playerdeck.Add(game.MiddleDeck.TakeCard())
 		}
@@ -169,6 +179,7 @@ func FireConnect(srv *Server, s *melody.Session) {
 		fmt.Println("Player ID", player.Id, "connected")
 	} else {
 		player.Session = s
+		player.Connected = true
 		fmt.Println("Player ID", player.Id, "reconnected")
 	}
 	BroadcastState(game)
@@ -181,8 +192,10 @@ func FireDisconnect(srv *Server, s *melody.Session) {
 	player := game.GetPlayer(cookieid.Value, cookiekey.Value)
 	if cookiekey.Value == player.Key {
 		player.Session = nil
+		player.Connected = false
 		fmt.Println(player.Id, "Disconnected")
 	}
+	BroadcastState(game)
 }
 
 func FireMessage(srv *Server, s *melody.Session, jsn []byte) bool {
@@ -222,6 +235,7 @@ func FireMessage(srv *Server, s *melody.Session, jsn []byte) bool {
 		err := ActionYaniv(game, player)
 		if err == "noerror" {
 			fmt.Println(player.Name, "just yanived !")
+			BroadcastState(game, player)
 		} else {
 			fmt.Println(err)
 		}
@@ -229,6 +243,7 @@ func FireMessage(srv *Server, s *melody.Session, jsn []byte) bool {
 		err := ActionAsaf(game, player)
 		if err == "noerror" {
 			fmt.Println(player.Name, "Asafed")
+			BroadcastState(game, player)
 		} else {
 			fmt.Println(err)
 		}

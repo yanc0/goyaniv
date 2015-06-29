@@ -3,6 +3,15 @@ Online, multiplayer, Yaniv card game
 
 # API
 ## Action
+### Ready
+```
+{
+    "name":"ready",
+    "putcards":[],
+    "takecard":0,
+    "option":"yes"
+}
+```
 ### Change name
 ```
 {

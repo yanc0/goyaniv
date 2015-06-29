@@ -38,6 +38,18 @@ func NewGame(gameUrl string) *Game {
 		YanivAt:    5,
 	}
 }
+
+func (g *Game) NewTurn() {
+	g.MiddleDeck = NewCompleteDeck()
+	g.MiddleDeck.Shuffle()
+	g.PlayDeck = &Deck{}
+	g.PlayDeck.Add(g.MiddleDeck.TakeCard())
+	g.TrashDeck = &Deck{}
+	g.Turn++
+	g.Yaniver = nil
+	g.Asafed = nil
+}
+
 func GetGameNameWithUrl(url string) string {
 	return strings.Split(url, "/")[2]
 }
@@ -56,27 +68,6 @@ func (g *Game) GetFastPlayer() *Player {
 		return g.GetCurrentPlayer()
 	}
 	return g.Players[(g.Turn-1)%len(g.Players)]
-}
-
-func (g *Game) GetState() State {
-	s := State{
-		PlayDeck:       Deck{},
-		PlayersScore:   make(map[string]int, 0),
-		PlayersNumCard: make(map[string]int, 0),
-		PlayersName:    make(map[string]string, 0),
-		PlayerTurn:     g.GetCurrentPlayer().Id,
-	}
-	if g.PlayDeck != nil {
-		for _, card := range *g.PlayDeck {
-			s.PlayDeck.Add(card)
-		}
-	}
-	for _, player := range g.Players {
-		s.PlayersScore[player.Id] = player.Score
-		s.PlayersNumCard[player.Id] = len(*player.Deck)
-		s.PlayersName[player.Id] = player.Name
-	}
-	return s
 }
 
 func (g *Game) GetPlayer(id string, key string) *Player {
