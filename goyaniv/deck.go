@@ -21,7 +21,7 @@ func NewCompleteDeck() *Deck {
 	deck := &Deck{}
 	symbols := make([]string, 4)
 	symbols[0] = "spade"
-	symbols[1] = "diamond"
+	symbols[1] = "diam"
 	symbols[2] = "heart"
 	symbols[3] = "club"
 	var j int = 1
@@ -50,7 +50,7 @@ func (d *Deck) Weight() int {
 func (d *Deck) Init() {
 	Symbols := make([]string, 4)
 	Symbols[0] = "spade"
-	Symbols[1] = "diamond"
+	Symbols[1] = "diam"
 	Symbols[2] = "heart"
 	Symbols[3] = "club"
 	id := 1

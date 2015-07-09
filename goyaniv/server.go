@@ -64,6 +64,9 @@ func (srv *Server) RoutesInit() {
 		http.ServeFile(c.Writer, c.Request, "html/jq.js")
 	})
 
+	srv.Routes.GET("/goyaniv.js", func(c *gin.Context) {
+		http.ServeFile(c.Writer, c.Request, "html/goyaniv.js")
+	})
 	srv.Routes.GET("/game/:name", func(c *gin.Context) {
 		cookiekey, _ := c.Request.Cookie("goyanivkey")
 		cookieid, _ := c.Request.Cookie("goyanivid")
@@ -73,7 +76,7 @@ func (srv *Server) RoutesInit() {
 			http.SetCookie(c.Writer, cookieid)
 			http.SetCookie(c.Writer, cookiekey)
 		}
-		http.ServeFile(c.Writer, c.Request, "html/game.html")
+		http.ServeFile(c.Writer, c.Request, "html/game2.html")
 	})
 
 	srv.Routes.GET("/game/:name/ws", func(c *gin.Context) {

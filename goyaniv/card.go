@@ -8,7 +8,7 @@ import (
 type Card struct {
 	Id     int    `json:"id"`
 	Value  int    `json:"value"`  // 0=JKR, 1=AS, 11=J, 12=Q, 13=K
-	Symbol string `json:"symbol"` // spade, heart, diamond, club
+	Symbol string `json:"symbol"` // spade, heart, diam, club
 }
 
 func (c *Card) Color() string {

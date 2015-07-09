@@ -1,6 +1,7 @@
 package goyaniv
 
 import (
+	"sort"
 	"strings"
 )
 
@@ -13,8 +14,6 @@ type Game struct {
 	Round      int       `json:"round"`
 	Url        string    `json:"url"`
 	Launched   bool      `json:"launched"`
-	Yaniver    *Player   `json:"yaniver"`
-	Asafed     *Player   `json:"asafed"`
 	Turn       int       `json:"turn"`
 	YanivAt    int       `json:"yanivat"`
 }
@@ -33,10 +32,64 @@ func NewGame(gameUrl string) *Game {
 		TrashDeck:  trash,
 		Url:        gameUrl,
 		Turn:       100,
-		Yaniver:    nil,
-		Asafed:     nil,
 		YanivAt:    5,
 	}
+}
+
+func (g *Game) IsTurnFinished() bool {
+	for _, player := range g.Players {
+		if player.WantsAsaf == "noanswer" {
+			return false
+		}
+	}
+	return true
+}
+
+func (g *Game) PlayersWantsAsaf() ListPlayer {
+	pwa := ListPlayer{}
+	for _, player := range g.Players {
+		if player.WantsAsaf == "yes" {
+			pwa = append(pwa, player)
+		}
+	}
+	return pwa
+}
+
+func (g *Game) AllPlayersAnswered() bool {
+	for _, player := range g.Players {
+		if player.WantsAsaf == "noanswer" {
+			return false
+		}
+	}
+	return true
+}
+
+func (g *Game) UpdateScores() {
+	if g.AllPlayersAnswered() {
+		pwa := g.PlayersWantsAsaf()
+		sort.Sort(pwa)
+		for i, player := range pwa {
+			if i > 0 {
+				player.Score = player.Score + i*30
+			} else {
+				player.Score = player.Score - player.Deck.Weight()
+			}
+		}
+
+		for _, player := range g.Players {
+			player.Score = player.Score + player.Deck.Weight()
+		}
+	}
+}
+
+func (g *Game) GetAsafRank() int {
+	var i int
+	for _, player := range g.Players {
+		if player.Asaf > i {
+			i = player.Asaf
+		}
+	}
+	return i + 1
 }
 
 func (g *Game) NewTurn() {
@@ -46,8 +99,11 @@ func (g *Game) NewTurn() {
 	g.PlayDeck.Add(g.MiddleDeck.TakeCard())
 	g.TrashDeck = &Deck{}
 	g.Turn++
-	g.Yaniver = nil
-	g.Asafed = nil
+	for _, player := range g.Players {
+		for i := 0; i < 5; i++ {
+			player.Deck.Add(g.MiddleDeck.TakeCard())
+		}
+	}
 }
 
 func GetGameNameWithUrl(url string) string {

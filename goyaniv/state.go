@@ -2,6 +2,7 @@ package goyaniv
 
 import (
 	"encoding/json"
+	"fmt"
 )
 
 type LastAction struct {
@@ -35,8 +36,9 @@ type State struct {
 }
 
 func NewStatePlayer(p *Player) StatePlayer {
+	fmt.Println("Generating state player", p.Id)
 	return StatePlayer{
-		Name:       p.Name,
+		Name:       p.Id,
 		Id:         p.Id,
 		Me:         true,
 		Playing:    false,
@@ -57,17 +59,21 @@ func NewStateError(g *Game, p *Player, error string) *State {
 }
 
 func (sp *StatePlayer) HideInfos() {
-	HiddenCard := &Card{}
+	fmt.Println("Hide info sp.id", sp.Id)
 	sp.Me = false
-	sp.DeckWeight = 2
-	for i, _ := range sp.Deck {
-		(*sp).Deck[i] = HiddenCard
+	sp.DeckWeight = 0
+	deckhid := Deck{}
+	for _, _ = range sp.Deck {
+		deckhid.Add(&Card{})
 	}
+	sp.Deck = deckhid
 }
+
 func NewState(g *Game, p *Player) *State {
 	stateplayers := make([]StatePlayer, 0)
+	var sp StatePlayer
 	for _, player := range g.Players {
-		sp := NewStatePlayer(player)
+		sp = NewStatePlayer(player)
 		if sp.Id != p.Id {
 			sp.HideInfos()
 		}
