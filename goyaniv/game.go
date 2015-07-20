@@ -102,7 +102,6 @@ func (g *Game) UpdateScores() {
 			// Halved
 			if player.Score%50 == 0 {
 				if player.WantsAsaf == "no" {
-					player.Score = player.Score - player.Deck.Weight()
 					player.Score = player.Score - 50
 				}
 			}
