@@ -239,6 +239,7 @@ func FireMessage(srv *Server, s *melody.Session, jsn []byte) bool {
 		return false
 	}
 	action.PlayerName = player.Name
+	fmt.Println(action)
 	switch action.Name {
 	case "name":
 		ActionSetName(player, action.Option)
@@ -269,6 +270,7 @@ func FireMessage(srv *Server, s *melody.Session, jsn []byte) bool {
 		err := ActionAsaf(game, player, action.Option)
 		if err == "noerror" {
 			fmt.Println(player.Name, "Asafed")
+			action.ToLog(game)
 			game.UpdateScores()
 			BroadcastState(game)
 		} else {

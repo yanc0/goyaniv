@@ -89,12 +89,17 @@ func (g *Game) UpdateScores() {
 				player.Score = player.Score + i*30 - player.Deck.Weight()
 			} else {
 				player.Score = player.Score - player.Deck.Weight()
+				for i, ptmp := range g.Players {
+					if ptmp == player {
+						g.Turn = i
+					}
+				}
 			}
 		}
 
 		for _, player := range g.Players {
 			player.Score = player.Score + player.Deck.Weight()
-			// Paliers
+			// Halved
 			if player.Score%50 == 0 {
 				if player.WantsAsaf == "no" {
 					player.Score = player.Score - player.Deck.Weight()
@@ -126,7 +131,6 @@ func (g *Game) NewTurn() {
 	g.PlayDeck = &Deck{}
 	g.PlayDeck.Add(g.MiddleDeck.TakeCard())
 	g.TrashDeck = &Deck{}
-	g.Turn++
 	for _, player := range g.Players {
 		player.Yaniv = false
 		player.Asaf = 0
