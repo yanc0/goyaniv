@@ -24,7 +24,7 @@ func NewCompleteDeck() *Deck {
 	symbols[1] = "heart"
 	symbols[2] = "diam"
 	symbols[3] = "club"
-	var j int = 0
+	var j int = 1
 	for _, symbol := range symbols {
 		for i := 1; i < 14; i++ {
 			card := &Card{j, i, symbol}
@@ -46,20 +46,6 @@ func (d *Deck) Weight() int {
 		weight += card.Weight()
 	}
 	return weight
-}
-func (d *Deck) Init() {
-	Symbols := make([]string, 4)
-	Symbols[0] = "spade"
-	Symbols[1] = "diam"
-	Symbols[2] = "heart"
-	Symbols[3] = "club"
-	id := 1
-	for i := 0; i < 14; i++ {
-		for _, Symbol := range Symbols {
-			d.Add(&Card{id, i, Symbol})
-			id++
-		}
-	}
 }
 
 func (d *Deck) Shuffle() {

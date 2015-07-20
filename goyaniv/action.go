@@ -39,7 +39,6 @@ func ActionYaniv(game *Game, p *Player) string {
 			for _, player := range game.Players {
 				if player.Deck.Weight() > game.YanivAt {
 					player.WantsAsaf = "no"
-					fmt.Println("Player ID", player.Id, "cannot asaf")
 				} else {
 					player.WantsAsaf = "noanswer"
 				}
@@ -134,6 +133,9 @@ func ActionPut(game *Game, p *Player, action *Action) (err string) {
 	} else if p == game.GetFastPlayer() {
 		decktmp := Deck{}
 		putcard := p.Deck.TakeCardID(action.PutCards[0])
+		if putcard == nil {
+			return "error"
+		}
 		decktmp.Add(putcard)
 		for _, card := range *game.PlayDeck {
 			decktmp.Add(card)
@@ -142,6 +144,7 @@ func ActionPut(game *Game, p *Player, action *Action) (err string) {
 			game.PlayDeck.Add(putcard)
 		} else {
 			p.Deck.Add(putcard)
+			return "error"
 		}
 		return "fastplayed"
 	}
@@ -220,7 +223,6 @@ func FireDisconnect(srv *Server, s *melody.Session) {
 	player := game.GetPlayer(cookieid.Value, cookiekey.Value)
 	player.Session = nil
 	player.Connected = false
-	fmt.Println(player.Id, "Disconnected")
 	BroadcastState(game)
 }
 
