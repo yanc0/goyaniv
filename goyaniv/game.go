@@ -89,9 +89,10 @@ func (g *Game) UpdateScores() {
 				player.Score = player.Score + i*30 - player.Deck.Weight()
 			} else {
 				player.Score = player.Score - player.Deck.Weight()
+				// the winner begins
 				for i, ptmp := range g.Players {
 					if ptmp == player {
-						g.Turn = i
+						g.Turn = i + len(g.Players)
 					}
 				}
 			}
