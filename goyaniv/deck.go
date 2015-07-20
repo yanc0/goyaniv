@@ -21,10 +21,10 @@ func NewCompleteDeck() *Deck {
 	deck := &Deck{}
 	symbols := make([]string, 4)
 	symbols[0] = "spade"
-	symbols[1] = "diam"
-	symbols[2] = "heart"
+	symbols[1] = "heart"
+	symbols[2] = "diam"
 	symbols[3] = "club"
-	var j int = 1
+	var j int = 0
 	for _, symbol := range symbols {
 		for i := 1; i < 14; i++ {
 			card := &Card{j, i, symbol}
