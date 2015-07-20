@@ -6,12 +6,19 @@ import (
 	"github.com/olahol/melody"
 )
 
+type Action struct {
+	Name       string `json:"name"`
+	PutCards   []int  `json:"putcards"`
+	TakeCard   int    `json:"takecard"`
+	Option     string `json:"option"`
+	PlayerName string `json:"playername"`
+}
+
 func UnicastState(game *Game, player *Player, error string) {
 	state := NewState(game, player)
 	state.Error = error
 	if player.Session != nil {
 		_, data := state.Json()
-		fmt.Println("Sending state to", player.Id)
 		player.Session.Write(data)
 	}
 }
@@ -30,8 +37,9 @@ func ActionYaniv(game *Game, p *Player) string {
 	if p.Id == game.GetCurrentPlayer().Id {
 		if p.Deck.Weight() <= game.YanivAt {
 			for _, player := range game.Players {
-				if p.Deck.Weight() > game.YanivAt {
+				if player.Deck.Weight() > game.YanivAt {
 					player.WantsAsaf = "no"
+					fmt.Println("Player ID", player.Id, "cannot asaf")
 				} else {
 					player.WantsAsaf = "noanswer"
 				}
@@ -52,28 +60,29 @@ func ActionYaniv(game *Game, p *Player) string {
 }
 
 func ActionAsaf(game *Game, player *Player, answer string) string {
-	if answer != "yes" || answer != "no" {
+	if answer == "yes" || answer == "no" {
+		if len(game.PlayersWantsAsaf()) == 0 {
+			error := "Nobody yaniv yet, you can't asaf"
+			UnicastState(game, player, error)
+			return error
+		} else {
+			if player.WantsAsaf == "noanswer" {
+				player.WantsAsaf = answer
+				if answer == "yes" {
+					player.Asaf = game.GetAsafRank()
+				}
+			}
+		}
+	} else {
 		error := "Bad answer"
 		UnicastState(game, player, error)
 		return error
-	}
-	if len(game.PlayersWantsAsaf()) == 0 {
-		error := "Nobody yaniv yet, you can't asaf"
-		UnicastState(game, player, error)
-		return error
-	} else {
-		if player.WantsAsaf == "noanswer" {
-			player.WantsAsaf = answer
-			if answer == "yes" {
-				player.Asaf = game.GetAsafRank()
-			}
-		}
 	}
 	return "noerror"
 }
 
 func ActionPut(game *Game, p *Player, action *Action) (err string) {
-	if len(game.PlayersWantsAsaf()) == 0 {
+	if len(game.PlayersWantsAsaf()) != 0 {
 		error := "Game stopped, you can asaf only"
 		UnicastState(game, p, error)
 		return error
@@ -123,18 +132,22 @@ func ActionPut(game *Game, p *Player, action *Action) (err string) {
 		}
 		return "noerror"
 	} else if p == game.GetFastPlayer() {
-		return "fastplayer"
+		decktmp := Deck{}
+		putcard := p.Deck.TakeCardID(action.PutCards[0])
+		decktmp.Add(putcard)
+		for _, card := range *game.PlayDeck {
+			decktmp.Add(card)
+		}
+		if decktmp.IsMultiple() {
+			game.PlayDeck.Add(putcard)
+		} else {
+			p.Deck.Add(putcard)
+		}
+		return "fastplayed"
 	}
 	error := "It is not your turn"
 	UnicastState(game, p, error)
 	return error
-}
-
-type Action struct {
-	Name     string `json:"name"`
-	PutCards []int  `json:"putcards"`
-	TakeCard int    `json:"takecard"`
-	Option   string `json:"option"`
 }
 
 func (a *Action) isValid() bool {
@@ -187,6 +200,7 @@ func FireConnect(srv *Server, s *melody.Session) {
 			Id:      playerid,
 			Deck:    playerdeck,
 			Key:     playerkey,
+			State:   "playing",
 		}
 		game.AddPlayer(player)
 		fmt.Println("Player ID", player.Id, "connected")
@@ -219,34 +233,33 @@ func FireMessage(srv *Server, s *melody.Session, jsn []byte) bool {
 	if player.Key != cookiekey.Value && player.Id != cookieid.Value {
 		return false
 	}
-	fmt.Println(action, "player", player.Id)
 
 	if !action.isValid() {
 		UnicastState(game, player, "Action not valid")
 		return false
 	}
-
-	if game == nil || player == nil {
-		return false
-	}
-
+	action.PlayerName = player.Name
 	switch action.Name {
 	case "name":
 		ActionSetName(player, action.Option)
+		action.ToLog(game)
 		BroadcastState(game)
 	case "put":
 		err := ActionPut(game, player, action)
 		if err == "noerror" {
 			game.NextPlayer()
+			action.ToLog(game)
+			BroadcastState(game)
+		} else if err == "fastplayed" {
+			action.ToLog(game)
 			BroadcastState(game)
 		} else {
-			fmt.Println(err)
 			return false
 		}
 	case "yaniv":
 		err := ActionYaniv(game, player)
 		if err == "noerror" {
-			fmt.Println(player.Name, "just yanived !")
+			action.ToLog(game)
 			game.UpdateScores()
 			BroadcastState(game)
 		} else {

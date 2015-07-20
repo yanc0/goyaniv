@@ -2,13 +2,8 @@ package goyaniv
 
 import (
 	"encoding/json"
-	"fmt"
+	"sort"
 )
-
-type LastAction struct {
-	Player   string `json:"player"`
-	TakeCard int    `json:"takecard"` //-1 = Yaniv, -2 = Asaf
-}
 
 type StatePlayer struct {
 	Name       string `json:"name"`
@@ -17,6 +12,7 @@ type StatePlayer struct {
 	Playing    bool   `json:"playing"`
 	Connected  bool   `json:"connected"`
 	Yaniver    bool   `json:"yaniver"`
+	Asafer     bool   `json:"asafer"`
 	Ready      bool   `json:"ready"`
 	Lost       bool   `json:"lost"`
 	Score      int    `json:"score"`
@@ -25,9 +21,8 @@ type StatePlayer struct {
 }
 
 type State struct {
-	PlayDeck   Deck       `json:"playdeck"`
-	LastAction LastAction `json:"lastaction"`
-
+	PlayDeck   Deck          `json:"playdeck"`
+	LastLog    Log           `json:"lastlog"`
 	Round      int           `json:"round"`
 	Started    bool          `json:"started"`
 	Terminated bool          `json:"terminated"`
@@ -35,15 +30,17 @@ type State struct {
 	Error      string        `json:"error"`
 }
 
-func NewStatePlayer(p *Player) StatePlayer {
-	fmt.Println("Generating state player", p.Id)
+func NewStatePlayer(p *Player, playing bool) StatePlayer {
+	sort.Sort(*p.Deck)
+
 	return StatePlayer{
-		Name:       p.Id,
+		Name:       p.Name,
 		Id:         p.Id,
 		Me:         true,
-		Playing:    false,
-		Connected:  true,
-		Yaniver:    false,
+		Playing:    playing,
+		Connected:  p.Connected,
+		Yaniver:    p.Yaniv,
+		Asafer:     (p.Asaf > 0),
 		Ready:      p.Ready,
 		Lost:       false,
 		Score:      p.Score,
@@ -59,7 +56,6 @@ func NewStateError(g *Game, p *Player, error string) *State {
 }
 
 func (sp *StatePlayer) HideInfos() {
-	fmt.Println("Hide info sp.id", sp.Id)
 	sp.Me = false
 	sp.DeckWeight = 0
 	deckhid := Deck{}
@@ -73,17 +69,18 @@ func NewState(g *Game, p *Player) *State {
 	stateplayers := make([]StatePlayer, 0)
 	var sp StatePlayer
 	for _, player := range g.Players {
-		sp = NewStatePlayer(player)
+		playing := g.GetCurrentPlayer().Id == player.Id
+		sp = NewStatePlayer(player, playing)
 		if sp.Id != p.Id {
 			sp.HideInfos()
 		}
 		stateplayers = append(stateplayers, sp)
 	}
 	return &State{
-		PlayDeck:   *g.PlayDeck,
-		LastAction: LastAction{},
-		Round:      g.Round,
-		Players:    stateplayers,
+		PlayDeck: *g.PlayDeck,
+		LastLog:  *g.LastLog,
+		Round:    g.Round,
+		Players:  stateplayers,
 	}
 }
 
