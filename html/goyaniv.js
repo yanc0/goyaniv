@@ -83,6 +83,7 @@ function resetview() {
   $('.playdeck').empty();
   $('.players').empty();
   $('.log').empty();
+  $('.debug').empty();
 }
 
 function cardhighlighter() {

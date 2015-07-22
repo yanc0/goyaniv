@@ -70,6 +70,15 @@ func (g *Game) PlayersWantsAsaf() ListPlayer {
 	return pwa
 }
 
+func (g *Game) GetReferenceCardById(id int) *Card {
+	for _, card := range *g.ReferenceDeck {
+		if card.Id == id {
+			return card
+		}
+	}
+	return nil
+}
+
 func (g *Game) AllPlayersAnswered() bool {
 	for _, player := range g.Players {
 		fmt.Println(player.WantsAsaf)

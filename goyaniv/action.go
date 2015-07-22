@@ -81,76 +81,61 @@ func ActionAsaf(game *Game, player *Player, answer string) string {
 }
 
 func ActionPut(game *Game, p *Player, action *Action) (err string) {
+	decktmp := &Deck{}
 	if len(game.PlayersWantsAsaf()) != 0 {
-		error := "Game stopped, you can asaf only"
-		UnicastState(game, p, error)
-		return error
+		return "Game stopped, you can asaf only"
 	}
-	if p.Id == game.GetCurrentPlayer().Id {
-		decktmp := Deck{}
-		for _, id := range action.PutCards {
-			c := p.Deck.TakeCardID(id)
-			if c == nil {
-				for _, card := range decktmp {
-					p.Deck.Add(card)
-				}
-				error := "Put cards does not exists in player deck"
-				UnicastState(game, p, error)
-				return error
-			}
-			decktmp.Add(c)
-		}
-		if !decktmp.IsValid() {
-			for _, card := range decktmp {
-				p.Deck.Add(card)
-			}
-			error := "invalid combination"
-			UnicastState(game, p, error)
-			return error
-		}
-		if action.TakeCard == 0 {
-			cardtaken := game.MiddleDeck.TakeCard()
-			if cardtaken == nil {
-				error := "Card does not exist in deck"
-				UnicastState(game, p, error)
-				return error
-			}
-			p.Deck.Add(cardtaken)
-		} else {
-			cardtaken := game.PlayDeck.TakeCardID(action.TakeCard)
-			if cardtaken == nil {
-				error := "Card does not exist in deck"
-				UnicastState(game, p, error)
-				return error
-			}
-			p.Deck.Add(cardtaken)
-		}
-		game.TrashDeck.AddDeck(game.PlayDeck)
-		for _, card := range decktmp {
-			game.PlayDeck.Add(card)
-		}
-		return "noerror"
-	} else if p == game.GetFastPlayer() {
-		decktmp := Deck{}
-		putcard := p.Deck.TakeCardID(action.PutCards[0])
+	for _, id := range action.PutCards {
+		putcard := p.Deck.TakeCardID(id)
 		if putcard == nil {
-			return "error"
+			// player want to send card he does not have
+			// put back taken card in is deck
+			p.Deck.AddDeck(decktmp)
+			return "Put cards does not exists in player deck"
 		}
+		fmt.Println(putcard)
 		decktmp.Add(putcard)
-		for _, card := range *game.PlayDeck {
-			decktmp.Add(card)
-		}
-		if decktmp.IsMultiple() {
-			game.PlayDeck.Add(putcard)
-		} else {
-			p.Deck.Add(putcard)
-			return "error"
-		}
-		return "fastplayed"
 	}
-	error := "It is not your turn"
-	UnicastState(game, p, error)
-	return error
+	if decktmp.Len() == 1 || decktmp.IsMultiple() || decktmp.IsSequence() {
+		// Classic case
+		if p == game.GetCurrentPlayer() {
+			if action.TakeCard == 0 {
+				game.PlayDeck = decktmp
+				p.Deck.Add(game.MiddleDeck.TakeCard())
+				return "noerror"
+			} else {
+				takecard := game.PlayDeck.TakeCardID(action.TakeCard)
+				if takecard == nil {
+					p.Deck.AddDeck(decktmp)
+					return "Card does not exists in playdeck"
+				} else {
+					game.TrashDeck.AddDeck(game.PlayDeck)
+					game.PlayDeck = decktmp
+					p.Deck.Add(takecard)
+					return "noerror"
+				}
+			}
+		} else {
+			playdeckcopy := *game.PlayDeck
+			decktmp.AddDeck(&playdeckcopy)
+			// if it's not your turn you can only put multiple
+			// and with two condition:
+			// - you can fast play
+			// - you complete the four multiple
+			if decktmp.IsMultiple() {
+				if game.GetFastPlayer() == p || decktmp.Len() == 4 {
+					game.TrashDeck.AddDeck(game.PlayDeck)
+					game.PlayDeck = decktmp
+					return "fastplay"
+				}
+			}
+			// else it's not your turn
+			p.Deck.AddDeck(decktmp)
+			return "It is not your turn"
+		}
+	}
+	p.Deck.AddDeck(decktmp)
+	return "You put invalid card combination"
 }
 
 func (a *Action) isValid() bool {
@@ -253,10 +238,11 @@ func FireMessage(srv *Server, s *melody.Session, jsn []byte) bool {
 			game.NextPlayer()
 			action.ToLog(game)
 			BroadcastState(game)
-		} else if err == "fastplayed" {
+		} else if err == "fastplay" {
 			action.ToLog(game)
 			BroadcastState(game)
 		} else {
+			UnicastState(game, player, err)
 			return false
 		}
 	case "yaniv":
