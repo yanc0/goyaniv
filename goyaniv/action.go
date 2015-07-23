@@ -47,10 +47,10 @@ func ActionReady(game *Game, p *Player, option string) string {
 
 	for _, player := range game.Players {
 		if player.Ready == false {
-			return "start"
+			return "wait"
 		}
 	}
-	return "wait"
+	return "start"
 }
 
 func ActionYaniv(game *Game, p *Player) string {
@@ -131,28 +131,44 @@ func ActionPut(game *Game, p *Player, action *Action) (err string) {
 					p.Deck.AddDeck(decktmp)
 					return "Card does not exists in playdeck"
 				} else {
-					game.TrashDeck.AddDeck(game.PlayDeck)
-					game.PlayDeck = decktmp
-					p.Deck.Add(takecard)
-					return "noerror"
+					playdeckcopy := *game.PlayDeck
+					decktmpcopy := *decktmp
+					deckverif := &Deck{}
+					deckverif.AddDeck(&playdeckcopy)
+					deckverif.AddDeck(&decktmpcopy)
+					deckverif.Add(takecard)
+					if deckverif.IsMultiple() && deckverif.Len() == 4 {
+						game.TrashDeck.AddDeck(game.PlayDeck)
+						game.PlayDeck = deckverif
+						return "fastplay"
+					} else {
+						game.TrashDeck.AddDeck(game.PlayDeck)
+						game.PlayDeck = decktmp
+						p.Deck.Add(takecard)
+						return "noerror"
+					}
 				}
 			}
 		} else {
 			playdeckcopy := *game.PlayDeck
+			decktmpcopy := *decktmp
 			decktmp.AddDeck(&playdeckcopy)
 			// if it's not your turn you can only put multiple
 			// and with two condition:
 			// - you can fast play
 			// - you complete the four multiple
-			if decktmp.IsMultiple() {
-				if game.GetFastPlayer() == p || decktmp.Len() == 4 {
+			if decktmp.IsMultiple() && game.LastLog.Action == "put" {
+				if (game.GetFastPlayer() == p && game.LastLog.TakeCard.Id == 0) || decktmp.Len() == 4 {
 					game.TrashDeck.AddDeck(game.PlayDeck)
 					game.PlayDeck = decktmp
 					return "fastplay"
+				} else {
+					p.Deck.AddDeck(&decktmpcopy)
 				}
+			} else {
+				// else it's not your turn
+				p.Deck.AddDeck(&decktmpcopy)
 			}
-			// else it's not your turn
-			p.Deck.AddDeck(decktmp)
 			return "It is not your turn"
 		}
 	}
@@ -211,6 +227,7 @@ func FireConnect(srv *Server, s *melody.Session) {
 			Deck:    playerdeck,
 			Key:     playerkey,
 			State:   "playing",
+			Ready:   false,
 		}
 		game.AddPlayer(player)
 		fmt.Println("Player ID", player.Id, "connected")
@@ -269,6 +286,7 @@ func FireMessage(srv *Server, s *melody.Session, jsn []byte) bool {
 		}
 	case "ready":
 		ret := ActionReady(game, player, action.Option)
+		fmt.Println("game ", ret)
 		if ret == "start" {
 			game.Launch()
 		}
