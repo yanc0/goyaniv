@@ -15,7 +15,7 @@ type Game struct {
 	TrashDeck     *Deck     `json:"playdeck"`
 	Round         int       `json:"round"`
 	Url           string    `json:"url"`
-	Launched      bool      `json:"launched"`
+	Started       bool      `json:"started"`
 	Turn          int       `json:"turn"`
 	YanivAt       int       `json:"yanivat"`
 	LastLog       *Log      `json:"lastlog"`
@@ -44,6 +44,7 @@ func NewGame(gameUrl string) *Game {
 		MiddleDeck:    middle,
 		PlayDeck:      play,
 		TrashDeck:     trash,
+		Started:       false,
 		Url:           gameUrl,
 		Turn:          100,
 		YanivAt:       5,
@@ -81,12 +82,16 @@ func (g *Game) GetReferenceCardById(id int) *Card {
 
 func (g *Game) AllPlayersAnswered() bool {
 	for _, player := range g.Players {
-		fmt.Println(player.WantsAsaf)
 		if player.WantsAsaf == "noanswer" {
 			return false
 		}
 	}
 	return true
+}
+
+func (g *Game) Launch() {
+	g.Started = true
+	g.Turn = GenerateRandInt(len(g.Players))
 }
 
 func (g *Game) UpdateScores() {

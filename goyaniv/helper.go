@@ -22,3 +22,8 @@ func GenerateUnique() string {
 	}
 	return string(uniq)
 }
+
+func GenerateRandInt(max int) int {
+	rand.Seed(time.Now().UTC().UnixNano())
+	return rand.Intn(max)
+}

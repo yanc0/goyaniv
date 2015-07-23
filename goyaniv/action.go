@@ -33,6 +33,26 @@ func ActionSetName(p *Player, name string) {
 	p.Name = name
 }
 
+func ActionReady(game *Game, p *Player, option string) string {
+	if option == "no" {
+		if game.Started {
+			return "Game already started, you have to stay ready"
+		}
+		p.Ready = false
+	} else if option == "yes" {
+		p.Ready = true
+	} else {
+		UnicastState(game, p, "Invalid Ready option")
+	}
+
+	for _, player := range game.Players {
+		if player.Ready == false {
+			return "start"
+		}
+	}
+	return "wait"
+}
+
 func ActionYaniv(game *Game, p *Player) string {
 	if p.Id == game.GetCurrentPlayer().Id {
 		if p.Deck.Weight() <= game.YanivAt {
@@ -85,6 +105,9 @@ func ActionPut(game *Game, p *Player, action *Action) (err string) {
 	if len(game.PlayersWantsAsaf()) != 0 {
 		return "Game stopped, you can asaf only"
 	}
+	if !game.Started {
+		return "Game have not started yet"
+	}
 	for _, id := range action.PutCards {
 		putcard := p.Deck.TakeCardID(id)
 		if putcard == nil {
@@ -93,7 +116,6 @@ func ActionPut(game *Game, p *Player, action *Action) (err string) {
 			p.Deck.AddDeck(decktmp)
 			return "Put cards does not exists in player deck"
 		}
-		fmt.Println(putcard)
 		decktmp.Add(putcard)
 	}
 	if decktmp.Len() == 1 || decktmp.IsMultiple() || decktmp.IsSequence() {
@@ -245,6 +267,12 @@ func FireMessage(srv *Server, s *melody.Session, jsn []byte) bool {
 			UnicastState(game, player, err)
 			return false
 		}
+	case "ready":
+		ret := ActionReady(game, player, action.Option)
+		if ret == "start" {
+			game.Launch()
+		}
+		BroadcastState(game)
 	case "yaniv":
 		err := ActionYaniv(game, player)
 		if err == "noerror" {

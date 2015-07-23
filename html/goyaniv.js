@@ -66,8 +66,13 @@ function getplayershtml(players) {
     else
       var conn = "<span class='red'>&#9210;</span>";
     div += "<div class='player'> ";
+    if (player.ready)
+      div += "<div class='ready'>&#10003;</div>";
+    else
+      div += "<div class='notready'>&#10162;</div>";
     if (player.playing)
-      div += "&#9660;<br/>";
+      div += "&#9660;";
+    div += "<br/>";
     div += "name: "+player.name.substring(0,8)+" "+conn+"<br/>";
     div += "score: "+player.score+"<br/>";
     div += "deck: "+player.deckweight+"<br/>";
@@ -115,6 +120,15 @@ function cardselector() {
   
   $('.middledeck > .card').click(function (event){
     action("put",cardselected, parseInt(this.id));
+  });
+}
+
+function readyselector() {
+  $('.ready').click(function(event) {
+    action("ready", [], 0, "no");
+  });
+  $('.notready').click(function(event) {
+    action("ready", [], 0, "yes");
   });
 }
 
@@ -221,4 +235,5 @@ ws.onmessage = function (msg) {
   actionbar(me(state));
   cardselector();
   cardhighlighter();
+  readyselector();
 };
