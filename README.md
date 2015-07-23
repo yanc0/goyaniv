@@ -1,6 +1,11 @@
 # Goyaniv
 Online, multiplayer, Yaniv card game
-# !!! UNDER HEAVY CONSTRUCTION !!!
+
+# Docker
+Launch goyaniv docker container and bind 5000 port to host IP
+```
+docker run -p 5000:5000 yanc0/goyaniv:latest
+```
 # API
 ## Action
 ### Ready
@@ -15,17 +20,17 @@ Online, multiplayer, Yaniv card game
 ### Change name
 ```
 {
-    "name":"nickname",
+    "name":"name",
     "putcards":[],
     "takecard":0,
     "option":"Alice"
 }
 ```
-### Play
+### Put
 Takecard to 0 to take from middledeck
 ```
 {
-    "name":"play",
+    "name":"put",
     "putcards":[1,2],
     "takecard":0,
     "option":""
@@ -46,7 +51,7 @@ Takecard to 0 to take from middledeck
     "name":"asaf",
     "putcards":[],
     "takecard":0,
-    "option":""
+    "option":"yes" (or no)
 }
 ```
 
@@ -56,78 +61,107 @@ Takecard to 0 to take from middledeck
 {
     "playdeck":[
         {
-            "id":25,
-            "value":12,
-            "symbol":"diamond"
-        },
-        {
-            "id":39,
-            "value":12,
-            "symbol":"club"
+            "id":17,
+            "value":4,
+            "symbol":"heart"
         }
     ],
-    "lastaction":{
-        "player":"JUmTxQbumZtVEYIbXasf",
-        "takecard":23
+    "lastlog":{
+        "playername":"",
+        "action":"",
+        "takecard":{
+            "id":0,
+            "value":0,
+            "symbol":""
+        },
+        "putcards":null,
+        "option":""
     },
     "round":0,
-    "started":true,
+    "started":false,
     "terminated":false,
-    "players":
-    [
-      {
-        "name":"Alice",
-        "id":"Vkz0Gl0tUlPwFsQTNXGh",
-        "me": true,
-        "playing": false,
-        "connected":true,
-        "yaniver":false,
-        "loss":false,
-        "score":36,
-        "deckweight":27,
-        "deck":[
+    "players":[
         {
-            "id":33,
-            "value":7,
-            "symbol":"heart"
+            "name":"WvLdjRIGihpqWlRqaIHH",
+            "id":"PZvYDrDRuiArcdsETXNP",
+            "me":false,
+            "playing":true,
+            "connected":true,
+            "yaniver":false,
+            "asafer":false,
+            "ready":false,
+            "lost":false,
+            "score":0,
+            "deckweight":0,
+            "deck":[
+                {
+                    "id":0,
+                    "value":0,
+                    "symbol":""
+                },
+                {
+                    "id":0,
+                    "value":0,
+                    "symbol":""
+                },
+                {
+                    "id":0,
+                    "value":0,
+                    "symbol":""
+                },
+                {
+                    "id":0,
+                    "value":0,
+                    "symbol":""
+                },
+                {
+                    "id":0,
+                    "value":0,
+                    "symbol":""
+                }
+            ]
         },
         {
-            "id":10,
-            "value":10,
-            "symbol":"spade"
-        },
-        {
-            "id":49,
-            "value":10,
-            "symbol":"club"
+            "name":"eAFvYsjtKFDxmQtRiXku",
+            "id":"LiZkibsHsquOZFbAXuxl",
+            "me":true,
+            "playing":false,
+            "connected":true,
+            "yaniver":false,
+            "asafer":false,
+            "ready":false,
+            "lost":false,
+            "score":0,
+            "deckweight":28,
+            "deck":[
+                {
+                    "id":28,
+                    "value":2,
+                    "symbol":"diam"
+                },
+                {
+                    "id":16,
+                    "value":3,
+                    "symbol":"heart"
+                },
+                {
+                    "id":29,
+                    "value":3,
+                    "symbol":"diam"
+                },
+                {
+                    "id":39,
+                    "value":13,
+                    "symbol":"diam"
+                },
+                {
+                    "id":26,
+                    "value":13,
+                    "symbol":"heart"
+                }
+            ]
         }
-      },
-      {
-        "name":"Bob",
-        "id":"OndJnsnkapmdHgsvzHsk",
-        "me": false,
-        "playing": true,
-        "connected":true,
-        "yaniver":false,
-        "score":36,
-        "deckweight":27,
-        "deck":[
-        {
-            "id":0,
-            "value":0,
-            "symbol":"nil"
-        },
-        {
-            "id":0,
-            "value":0,
-            "symbol":"nil"
-        },
-        {
-            "id":0,
-            "value":0,
-            "symbol":"nil"
-        }
-      },
-    ]
+    ],
+    "error":""
 }
 ```
