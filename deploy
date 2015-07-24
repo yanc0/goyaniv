@@ -1,0 +1,4 @@
+#!/bin/sh
+
+docker build -t="yanc0/goyaniv" . && docker push yanc0/goyaniv && ssh yanco.eu ./goyaniv-deploy.sh
+
