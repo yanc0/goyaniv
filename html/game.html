@@ -2,121 +2,50 @@
   <head>
     <title>Yaniv Devel</title>
     <script src="/jq.js"></script>
+    <script src="/goyaniv.js"></script>
+    <style type="text/css">
+      .red{
+         color: red;
+      }
+      .card {
+        display: inline-block;
+      }
+      .player {
+        display: inline-block;
+        margin-right: 15px;
+      } 
+      .debug {
+        margin-top: 700px;
+      }
+      .highlight {
+        background-color: #DDD; 
+      }
+      .green {
+        color: green;
+      } 
+      .red {
+        color: red;
+      }
+
+
+  
+   </style>
   </head>
-
-  <style>
-    #log {
-      text-align: left;
-      background: #f1f1f1;
-      min-height: 300px;
-      padding: 20px;
-    }
-
-    .cardselected {
-      background-color : yellow;
-    }
-    #playdeck {
-      padding-bottom: 10px;
-    }
-  </style>
-
   <body>
     <center>
-        <!-- Mon ID -->
-        <div id="myself">
-            Myself: 
+        <div class="log">
         </div>
-        <!-- ID joueur courant -->
-        <div id="playerturn">
-            Playerturn:
+        <div class="middledeck">
         </div>
-      <h3 id="name"></h3>
-      <pre id="log"></pre>          <!-- {ID action , IDs cartes posees, ID carte prise (0=rand), params facul.} -->
-      <input id="text" type="text" value='{"name":"name","putcards":[1,2,3],"takecard":1,"option":"toto"}'>
-      <!-- Stack cachee -->
-      <div class="cardstack">Stack</div>
-      <!-- Dernieres cartes posees -->
-      <div id="playdeck"></div>
-      <!-- Mes cartes -->
-      <div id="mydeck"></div>
+        <div class="playdeck">
+        </div>
+        <div class="players">
+        </div>
+        <div class="actionbar">
+        </div>
+        <input class="input-name" placeholder="Your name here..."/>
+        <div class="debug"></div>
+
     </center>
-    <script>
-      var url = "ws://" + window.location.host + window.location.pathname + "/ws";
-      var ws = new WebSocket(url);
-
-      var takecard = 0;
-      var sendjson = {"name":"","putcards":[],"takecard":0,"option":""}
-
-      function myself(){
-          $("#myself").empty()
-          $("#myself").append("Myself:"+$.cookie("goyanivid"));
-      };
-
-      function playerturn(s) {
-          $("#playerturn").empty()
-          $("#playerturn").append("Playerturn:" +s.playerturn);
-      };
-      function appendCardPlayDeck(element, index, array) {
-        $("#playdeck").append("<div class='cardplaydeck' id='"+element.id+"'>"+element.value+", "+element.symbol+" </div>")
-      };
-      function appendCardMyDeck(element, index, array) {
-        $("#mydeck").append("<div class='cardmydeck' id='"+element.id+"'>"+element.value+", "+element.symbol+" </div>")
-      };
-      ws.onmessage = function (msg) {
-        var state = jQuery.parseJSON(msg.data);
-        var line =  msg.data + "\n";
-        $("#log").append(line);
-        $("#mydeck").empty()
-        $("#playdeck").empty()
-        state.mydeck.forEach(appendCardMyDeck);
-        state.playdeck.forEach(appendCardPlayDeck);
-        myself();
-        playerturn(state);
-        cardselector();
-      };
-
-    function getSelectedCards() {
-        var selected = new Array()
-        $("#mydeck").children(".cardselected").each(function(){
-            selected.push(parseInt($(this).attr("id"), 0)) 
-            $(this).removeClass(".cardselected")
-        })
-        return selected
-    }
-    text.onkeydown = function (e) {
-      if (e.keyCode === 13 && text.value !== "") {
-        ws.send(text.value);
-        text.value = "";
-      }
-    };
-    function cardselector () {
-      $(".cardmydeck").click(function() {
-        if($(this).hasClass('cardselected')){
-          $(this).removeClass('cardselected');
-        } else {
-          $(this).addClass('cardselected');
-        }
-      });
-      // Pioche carte visible
-      $(".cardplaydeck").click(function() {
-        takecard = parseInt($(this).attr('id'), 0)
-        sendjson.takecard = takecard;
-        sendjson.putcards = getSelectedCards();
-        sendjson.name = "put";
-        ws.send(JSON.stringify(sendjson));
-      });
-      // Pioche carte aleatoire
-      $(".cardstack").click(function() {
-        takecard = 0
-        sendjson.takecard = takecard;
-        sendjson.putcards = getSelectedCards();
-        sendjson.name = "put";
-        console.log(sendjson)
-        ws.send(JSON.stringify(sendjson));
-      });
-    };
-      
-      
-    </script>
   </body>
 </html>
