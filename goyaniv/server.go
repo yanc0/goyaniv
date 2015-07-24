@@ -76,7 +76,7 @@ func (srv *Server) RoutesInit() {
 			http.SetCookie(c.Writer, cookieid)
 			http.SetCookie(c.Writer, cookiekey)
 		}
-		http.ServeFile(c.Writer, c.Request, "html/game2.html")
+		http.ServeFile(c.Writer, c.Request, "html/game.html")
 	})
 
 	srv.Routes.GET("/game/:name/ws", func(c *gin.Context) {
