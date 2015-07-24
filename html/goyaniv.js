@@ -8,11 +8,12 @@
 })(jQuery);
 
 function getenv() {
+  var protocol = document.location.protocol == 'https:' ? 'wss://' : 'ws://';
   var env = {
-    ws: "ws://"
+    ws: protocol
   }
-  env.ws += window.location.host
-  env.ws += window.location.pathname + "/ws"
+  env.ws += window.location.host;
+  env.ws += window.location.pathname + "/ws";
   return env
 };
 
