@@ -9,6 +9,7 @@ type StatePlayer struct {
 	Name       string `json:"name"`
 	Id         string `json:"id"`
 	Me         bool   `json:"me"`
+	Spectator  bool   `json:"spectator"`
 	Playing    bool   `json:"playing"`
 	Connected  bool   `json:"connected"`
 	Yaniver    bool   `json:"yaniver"`
@@ -37,6 +38,7 @@ func NewStatePlayer(p *Player, playing bool) StatePlayer {
 		Name:       p.Name,
 		Id:         p.Id,
 		Me:         true,
+		Spectator:  p.State == "spectator",
 		Playing:    playing,
 		Connected:  p.Connected,
 		Yaniver:    p.Yaniv,

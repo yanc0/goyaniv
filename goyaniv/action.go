@@ -57,7 +57,7 @@ func ActionYaniv(game *Game, p *Player) string {
 	if p.Id == game.GetCurrentPlayer().Id {
 		if p.Deck.Weight() <= game.YanivAt {
 			for _, player := range game.Players {
-				if player.Deck.Weight() > game.YanivAt {
+				if player.Deck.Weight() > game.YanivAt || player.IsSpectator() {
 					player.WantsAsaf = "no"
 				} else {
 					player.WantsAsaf = "noanswer"
@@ -217,8 +217,16 @@ func FireConnect(srv *Server, s *melody.Session) {
 	player := game.GetPlayer(playerid, playerkey)
 	if player == nil {
 		playerdeck := &Deck{}
-		for i := 0; i < 5; i++ {
-			playerdeck.Add(game.MiddleDeck.TakeCard())
+		state := "playing"
+		ready := false
+
+		if !game.Started {
+			for i := 0; i < 5; i++ {
+				playerdeck.Add(game.MiddleDeck.TakeCard())
+			}
+		} else {
+			state = "spectator"
+			ready = true
 		}
 		player = &Player{
 			Name:    GenerateUnique(),
@@ -226,8 +234,8 @@ func FireConnect(srv *Server, s *melody.Session) {
 			Id:      playerid,
 			Deck:    playerdeck,
 			Key:     playerkey,
-			State:   "playing",
-			Ready:   false,
+			State:   state,
+			Ready:   ready,
 		}
 		game.AddPlayer(player)
 		fmt.Println("Player ID", player.Id, "connected")

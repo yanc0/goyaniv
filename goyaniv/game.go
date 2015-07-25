@@ -121,7 +121,8 @@ func (g *Game) UpdateScores() {
 				}
 			}
 			if player.Score >= 200 {
-				player.State = "loose"
+				player.State = "spectator"
+				player.WantsAsaf = "no"
 			}
 		}
 
@@ -145,7 +146,7 @@ func (g *Game) NewTurn() {
 	g.PlayDeck = &Deck{}
 	g.PlayDeck.Add(g.MiddleDeck.TakeCard())
 	g.TrashDeck = &Deck{}
-	for _, player := range g.Players {
+	for _, player := range g.PlayersPlaying() {
 		player.Yaniv = false
 		player.Asaf = 0
 		player.WantsAsaf = "noanswer"
@@ -170,7 +171,7 @@ func (g *Game) NextPlayer() {
 }
 
 func (g *Game) GetCurrentPlayer() *Player {
-	return g.Players[g.Turn%len(g.PlayersPlaying())]
+	return g.PlayersPlaying()[g.Turn%len(g.PlayersPlaying())]
 }
 
 func (g *Game) PlayersPlaying() []*Player {
@@ -188,7 +189,7 @@ func (g *Game) GetFastPlayer() *Player {
 	if g.Turn == 100 {
 		return g.GetCurrentPlayer()
 	}
-	return g.Players[(g.Turn-1)%len(g.Players)]
+	return g.PlayersPlaying()[(g.Turn-1)%len(g.PlayersPlaying())]
 }
 
 func (g *Game) GetPlayer(id string, key string) *Player {

@@ -8,7 +8,7 @@ type Player struct {
 	Name      string          `json:"name"`
 	Session   *melody.Session `json:"session"`
 	Deck      *Deck           `json:"session"`
-	State     string          `json:"state"`
+	State     string          `json:"state"` // playing, spectator
 	Score     int             `json:"score"`
 	Connected bool            `json:"connected"`
 	Ready     bool            `json:"ready"`
@@ -17,6 +17,14 @@ type Player struct {
 	WantsAsaf string          `json:"wantsasaf"`
 	Asaf      int             `json:"asaf"`
 	Yaniv     bool            `json:"yaniv"`
+}
+
+func (p *Player) IsPlaying() bool {
+	return p.State == "playing"
+}
+
+func (p *Player) IsSpectator() bool {
+	return p.State == "spectator"
 }
 
 type ListPlayer []*Player

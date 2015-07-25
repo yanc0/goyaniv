@@ -62,23 +62,48 @@ function getdeckhtml(deck, mine) {
 function getplayershtml(players) {
   var div = "";
   for (var player of players) { 
-    if (player.connected)
-      var conn = "<span class='green'>&#9210;</span>";
-    else
-      var conn = "<span class='red'>&#9210;</span>";
-    div += "<div class='player'> ";
-    if (player.ready)
-      div += "<div class='ready'>&#10003;</div>";
-    else
-      div += "<div class='notready'>&#10162;</div>";
-    if (player.playing)
-      div += "&#9660;";
-    div += "<br/>";
-    div += "name: "+player.name.substring(0,8)+" "+conn+"<br/>";
-    div += "score: "+player.score+"<br/>";
-    div += "deck: "+player.deckweight+"<br/>";
+    if (!player.spectator) {
+      if (player.connected)
+        var conn = "<span class='green'>&#9210;</span>";
+      else
+        var conn = "<span class='red'>&#9210;</span>";
+      div += "<div class='player'> ";
+      if (player.ready)
+        div += "<div class='ready'>&#10003;</div>";
+      else
+        div += "<div class='notready'>&#10162;</div>";
+      if (player.playing)
+        div += "&#9660;";
+      if (player.yaniver)
+        div += "Y";
+      if (player.asafer)
+        div += "A";
+      div += "<br/>";
+      div += "name: "+player.name.substring(0,8)+" "+conn+"<br/>";
+      div += "score: "+player.score+"<br/>";
+      div += "deck: "+player.deckweight+"<br/>";
       div += getdeckhtml(player.deck, player.me);
-    div += "</div>";
+      div += "</div>";
+    }
+  };
+  return div 
+}
+
+function getspectatorhtml(players) {
+  var div = "";
+  for (var player of players) { 
+    if (player.spectator) {
+      if (player.connected)
+        var conn = "<span class='green'>&#9210;</span>";
+      else
+        var conn = "<span class='red'>&#9210;</span>";
+      div += "<div class='player'> ";
+      div += "name: "+player.name.substring(0,8)+" "+conn+"<br/>";
+      if (player.score > 0)
+        div += "score: "+player.score+"<br/>";
+      div += getdeckhtml(player.deck, player.me);
+      div += "</div>";
+    }
   };
   return div 
 }
@@ -90,6 +115,7 @@ function resetview() {
   $('.players').empty();
   $('.log').empty();
   $('.debug').empty();
+  $('.spectator').empty();
 }
 
 function cardhighlighter() {
@@ -231,6 +257,7 @@ ws.onmessage = function (msg) {
   $(".middledeck").append(getcardhtml("0","",""));
   $(".playdeck").append(getdeckhtml(state.playdeck));
   $(".players").append(getplayershtml(state.players));
+  $(".spectator").append(getspectatorhtml(state.players));
   $(".head").append(state.error + '<br/>');
   $(".debug").append(msg.data);
   actionbar(me(state));
