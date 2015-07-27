@@ -94,6 +94,10 @@ func (srv *Server) RoutesInit() {
 		srv.Ws.HandleRequest(c.Writer, c.Request)
 	})
 
+	srv.Routes.GET("/gamedev/:name/ws", func(c *gin.Context) {
+		srv.Ws.HandleRequest(c.Writer, c.Request)
+	})
+
 	srv.Ws.HandleMessage(func(s *melody.Session, msg []byte) {
 		FireMessage(srv, s, msg)
 	})
