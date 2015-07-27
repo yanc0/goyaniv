@@ -78,6 +78,17 @@ func (srv *Server) RoutesInit() {
 		}
 		http.ServeFile(c.Writer, c.Request, "html/game.html")
 	})
+  srv.Routes.GET("/gamedev/:name", func(c *gin.Context) {
+      cookiekey, _ := c.Request.Cookie("goyanivkey")
+      cookieid, _ := c.Request.Cookie("goyanivid")
+      if cookieid == nil || cookiekey == nil {
+        cookieid := CreateCookie("goyanivkey", GenerateUnique())
+        cookiekey := CreateCookie("goyanivid", GenerateUnique())
+        http.SetCookie(c.Writer, cookieid)
+        http.SetCookie(c.Writer, cookiekey)
+      }
+      http.ServeFile(c.Writer, c.Request, "html/gamedev.html")
+    })
 
 	srv.Routes.GET("/game/:name/ws", func(c *gin.Context) {
 		srv.Ws.HandleRequest(c.Writer, c.Request)
