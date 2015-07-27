@@ -92,6 +92,7 @@ Takecard to 0 to take from middledeck
             "ready":false,
             "lost":false,
             "score":0,
+            "spectator": false,
             "deckweight":0,
             "deck":[
                 {
@@ -132,6 +133,7 @@ Takecard to 0 to take from middledeck
             "ready":false,
             "lost":false,
             "score":0,
+            "spectator": false,
             "deckweight":28,
             "deck":[
                 {
