@@ -83,6 +83,7 @@ func NewState(g *Game, p *Player) *State {
 		LastLog:  *g.LastLog,
 		Round:    g.Round,
 		Players:  stateplayers,
+		Started:  g.Started,
 	}
 }
 
