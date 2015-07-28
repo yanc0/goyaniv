@@ -139,7 +139,6 @@ func ActionPut(game *Game, p *Player, action *Action) (err string) {
 					deckverif.AddDeck(&decktmpcopy)
 					deckverif.Add(takecard)
 					if deckverif.IsMultiple() && deckverif.Len() == 4 {
-						game.TrashDeck.AddDeck(game.PlayDeck)
 						game.PlayDeck = deckverif
 						return "fastplay"
 					} else {
@@ -160,7 +159,6 @@ func ActionPut(game *Game, p *Player, action *Action) (err string) {
 			// - you complete the four multiple
 			if decktmp.IsMultiple() && game.LastLog.Action == "put" {
 				if (game.GetFastPlayer() == p && game.LastLog.TakeCard.Id == 0) || decktmp.Len() == 4 {
-					game.TrashDeck.AddDeck(game.PlayDeck)
 					game.PlayDeck = decktmp
 					return "fastplay"
 				} else {
