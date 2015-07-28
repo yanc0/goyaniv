@@ -106,7 +106,7 @@ func (g *Game) UpdateScores() {
 				// the winner begins
 				for i, ptmp := range g.PlayersPlaying() {
 					if ptmp == player {
-						g.Turn = i + len(g.Players)
+						g.Turn = i + len(g.PlayersPlaying())
 					}
 				}
 			}
@@ -123,6 +123,7 @@ func (g *Game) UpdateScores() {
 			if player.Score >= 200 {
 				player.State = "spectator"
 				player.WantsAsaf = "no"
+				g.NewTurn()--
 			}
 		}
 
