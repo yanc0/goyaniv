@@ -252,6 +252,10 @@ func FireDisconnect(srv *Server, s *melody.Session) {
 	cookieid, _ := s.Request.Cookie("goyanivid")
 	cookiekey, _ := s.Request.Cookie("goyanivkey")
 	player := game.GetPlayer(cookieid.Value, cookiekey.Value)
+	if !game.Started {
+		game.DeletePlayer(player.Id)
+		game.debug_is_game_consistent()
+	}
 	player.Session = nil
 	player.Connected = false
 	BroadcastState(game)

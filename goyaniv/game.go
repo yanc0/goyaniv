@@ -140,6 +140,18 @@ func (g *Game) GetAsafRank() int {
 	return i + 1
 }
 
+func (g *Game) DeletePlayer(id string) {
+	for i, player := range g.Players {
+		if player.Id == id {
+			g.MiddleDeck.AddDeck(player.Deck)
+			g.MiddleDeck.Shuffle()
+			fmt.Println("before", len(g.Players))
+			(*g).Players = append((*g).Players[:i], (*g).Players[i+1:]...)
+			fmt.Println("after", len(g.Players))
+		}
+	}
+}
+
 func (g *Game) NewTurn() {
 	g.MiddleDeck = NewCompleteDeck()
 	g.MiddleDeck.Shuffle()
