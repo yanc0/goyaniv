@@ -146,6 +146,7 @@ func (g *Game) NewTurn() {
 	g.PlayDeck = &Deck{}
 	g.PlayDeck.Add(g.MiddleDeck.TakeCard())
 	g.TrashDeck = &Deck{}
+	g.Round++
 	for _, player := range g.PlayersPlaying() {
 		player.Yaniv = false
 		player.Asaf = 0
