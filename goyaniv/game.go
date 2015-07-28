@@ -123,7 +123,7 @@ func (g *Game) UpdateScores() {
 			if player.Score >= 200 {
 				player.State = "spectator"
 				player.WantsAsaf = "no"
-				g.NewTurn()--
+				g.Turn--
 			}
 		}
 
