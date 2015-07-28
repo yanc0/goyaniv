@@ -53,7 +53,7 @@ func NewGame(gameUrl string) *Game {
 }
 
 func (g *Game) IsTurnFinished() bool {
-	for _, player := range g.Players {
+	for _, player := range g.PlayersPlaying() {
 		if player.WantsAsaf == "noanswer" {
 			return false
 		}
@@ -63,7 +63,7 @@ func (g *Game) IsTurnFinished() bool {
 
 func (g *Game) PlayersWantsAsaf() ListPlayer {
 	pwa := ListPlayer{}
-	for _, player := range g.Players {
+	for _, player := range g.PlayersPlaying() {
 		if player.WantsAsaf == "yes" {
 			pwa = append(pwa, player)
 		}
@@ -81,7 +81,7 @@ func (g *Game) GetReferenceCardById(id int) *Card {
 }
 
 func (g *Game) AllPlayersAnswered() bool {
-	for _, player := range g.Players {
+	for _, player := range g.PlayersPlaying() {
 		if player.WantsAsaf == "noanswer" {
 			return false
 		}
@@ -104,7 +104,7 @@ func (g *Game) UpdateScores() {
 			} else {
 				player.Score = player.Score - player.Deck.Weight()
 				// the winner begins
-				for i, ptmp := range g.Players {
+				for i, ptmp := range g.PlayersPlaying() {
 					if ptmp == player {
 						g.Turn = i + len(g.Players)
 					}
@@ -112,7 +112,7 @@ func (g *Game) UpdateScores() {
 			}
 		}
 
-		for _, player := range g.Players {
+		for _, player := range g.PlayersPlaying() {
 			player.Score = player.Score + player.Deck.Weight()
 			// Halved
 			if player.Score%50 == 0 {
@@ -132,7 +132,7 @@ func (g *Game) UpdateScores() {
 
 func (g *Game) GetAsafRank() int {
 	var i int
-	for _, player := range g.Players {
+	for _, player := range g.PlayersPlaying() {
 		if player.Asaf > i {
 			i = player.Asaf
 		}
