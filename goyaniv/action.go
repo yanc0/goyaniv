@@ -122,6 +122,7 @@ func ActionPut(game *Game, p *Player, action *Action) (err string) {
 		// Classic case
 		if p == game.GetCurrentPlayer() {
 			if action.TakeCard == 0 {
+				game.TrashDeck.AddDeck(game.PlayDeck)
 				game.PlayDeck = decktmp
 				p.Deck.Add(game.MiddleDeck.TakeCard())
 				return "noerror"
