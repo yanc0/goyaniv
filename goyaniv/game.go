@@ -161,8 +161,20 @@ func GetGameNameWithUrl(url string) string {
 	return strings.Split(url, "/")[2]
 }
 
+func (g *Game) debug_is_game_consistent() {
+	nballcards := 0
+	nballcards = nballcards + g.MiddleDeck.Len()
+	nballcards = nballcards + g.PlayDeck.Len()
+	nballcards = nballcards + g.TrashDeck.Len()
+	for _, player := range g.Players {
+		nballcards = nballcards + player.Deck.Len()
+	}
+	fmt.Println("Is game consistent? ", nballcards == g.ReferenceDeck.Len(), nballcards)
+}
+
 func (g *Game) NextPlayer() {
-	if len(*g.MiddleDeck) == 0 {
+	g.debug_is_game_consistent()
+	if g.MiddleDeck.Len() == 0 {
 		g.TrashDeck.Shuffle()
 		g.MiddleDeck.AddDeck(g.TrashDeck)
 		fmt.Println("Middle Deck reset")
