@@ -220,7 +220,7 @@ func FireConnect(srv *Server, s *melody.Session) {
 		state := "playing"
 		ready := false
 
-		if !game.Started {
+		if !game.Started || len(game.Players) >= 5 {
 			for i := 0; i < 5; i++ {
 				playerdeck.Add(game.MiddleDeck.TakeCard())
 			}
