@@ -7,163 +7,135 @@ Launch goyaniv docker container and bind 5000 port to host IP
 docker run -p 5000:5000 yanc0/goyaniv:latest
 ```
 # API
-## Action
-### Ready
-```
-{
-    "name":"ready",
-    "putcards":[],
-    "takecard":0,
-    "option":"yes"
-}
-```
-### Change name
-```
-{
-    "name":"name",
-    "putcards":[],
-    "takecard":0,
-    "option":"Alice"
-}
-```
-### Put
-Takecard to 0 to take from middledeck
-```
-{
-    "name":"put",
-    "putcards":[1,2],
-    "takecard":0,
-    "option":""
-}
-```
-### Yaniv
-```
-{
-    "name":"yaniv",
-    "putcards":[],
-    "takecard":0,
-    "option":""
-}
-```
-### Asaf
-```
-{
-    "name":"asaf",
-    "putcards":[],
-    "takecard":0,
-    "option":"yes" (or no)
-}
-```
-
-## State
+State :
+-------
 
 ```
 {
-    "playdeck":[
-        {
-            "id":17,
-            "value":4,
-            "symbol":"heart"
-        }
-    ],
-    "lastlog":{
-        "playername":"",
-        "action":"",
-        "takecard":{
-            "id":0,
-            "value":0,
-            "symbol":""
-        },
-        "putcards":null,
-        "option":""
+  "action_last": {
+    "name": "card_take",
+    "options": {
+      "discarded": [{
+        "id": 17,
+        "value": 3
+      }, {
+        "id": 18,
+        "value": 4
+      }, {
+        "id": 19,
+        "value": 5
+      }],
+      "taken": {
+        "id": 0
+      }
     },
-    "round":0,
-    "started":false,
-    "terminated":false,
-    "players":[
-        {
-            "name":"WvLdjRIGihpqWlRqaIHH",
-            "id":"PZvYDrDRuiArcdsETXNP",
-            "me":false,
-            "playing":true,
-            "connected":true,
-            "yaniver":false,
-            "asafer":false,
-            "ready":false,
-            "lost":false,
-            "score":0,
-            "spectator": false,
-            "deckweight":0,
-            "deck":[
-                {
-                    "id":0,
-                    "value":0,
-                    "symbol":""
-                },
-                {
-                    "id":0,
-                    "value":0,
-                    "symbol":""
-                },
-                {
-                    "id":0,
-                    "value":0,
-                    "symbol":""
-                },
-                {
-                    "id":0,
-                    "value":0,
-                    "symbol":""
-                },
-                {
-                    "id":0,
-                    "value":0,
-                    "symbol":""
-                }
-            ]
-        },
-        {
-            "name":"eAFvYsjtKFDxmQtRiXku",
-            "id":"LiZkibsHsquOZFbAXuxl",
-            "me":true,
-            "playing":false,
-            "connected":true,
-            "yaniver":false,
-            "asafer":false,
-            "ready":false,
-            "lost":false,
-            "score":0,
-            "spectator": false,
-            "deckweight":28,
-            "deck":[
-                {
-                    "id":28,
-                    "value":2,
-                    "symbol":"diam"
-                },
-                {
-                    "id":16,
-                    "value":3,
-                    "symbol":"heart"
-                },
-                {
-                    "id":29,
-                    "value":3,
-                    "symbol":"diam"
-                },
-                {
-                    "id":39,
-                    "value":13,
-                    "symbol":"diam"
-                },
-                {
-                    "id":26,
-                    "value":13,
-                    "symbol":"heart"
-                }
-            ]
-        }
-    ],
-    "error":""
+    "player": {
+      "id": 345,
+      "name": "Totoro"
+    }
+  },
+  "errors": [{
+    "message": "Shit! You got an error! ='("
+  }],
+  "stack": [{
+    "id": 15,
+    "value": 2
+  }],
+  "user": {
+    "id": 345,
+    "name": "Totoro",
+    "score": 0,
+    "state": {
+      "asaf": false,
+      "loser": false,
+      "online": true,
+      "player": true,
+      "playing": false,
+      "ready": true,
+      "yaniv": false
+    }
+  },
+  "game": {
+    "ended": false,
+    "round": 1,
+    "started": true
+  },
+  "opponents": [{
+    "hand_size": 5,
+    "id": 134,
+    "name": "Totoro 24",
+    "score": 0,
+    "state": {
+      "asaf": false,
+      "online": true,
+      "playing": false,
+      "ready": true,
+      "yaniv": false
+    }
+  }],
+  "spectators": [{
+    "id": 10345,
+    "name": "Totoro 56",
+    "state": {
+      "loser": false,
+      "online": true
+    }
+  }]
+}
+```
+
+Actions :
+---------
+- Set ready
+
+```
+{
+  "name": "ready_set",
+  "options": {
+    "is_ready": true
+  }
+}
+```
+
+- Set user name
+
+```
+{
+  "name": "user_name_set",
+  "options": {
+    "name": "New name"
+  }
+}
+```
+
+- Take card
+
+```
+{
+  "name": "card_take",
+  "options": {
+    "take": 3,
+    "discard": [17, 18, 19]
+  }
+}
+
+```
+- Yaniv
+
+```
+{
+  "name": "yaniv",
+  "options": null
+}
+
+```
+- Asaf
+
+```
+{
+  "name": "asaf",
+  "options": {
+    "try_asaf": true
+  }
 }
 ```
